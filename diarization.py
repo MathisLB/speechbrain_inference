@@ -8,6 +8,19 @@ import matplotlib.pyplot as plt
 
 verification = SpeakerRecognition.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb", savedir="./pretrained_ecapa")
 
+# Different files from the same speaker
+file1 = './LibriSpeech/dev-clean-2/1272/135031/1272-135031-0000.flac' # Same speaker
+file2 = './LibriSpeech/dev-clean-2/1272/141231/1272-141231-0004.flac' # Same speaker
+file3 = './LibriSpeech/dev-clean-2/1462/170142/1462-170142-0000.flac'  # Different speaker
+
+# Test with 2 files from the same speaker
+score, prediction = verification.verify_files(file1, file2)
+print(score, prediction)
+
+# Test with 2 files from  different speakers
+score, prediction = verification.verify_files(file1, file3)
+print(score, prediction)
+
 utterances = glob.glob("./LibriSpeech/dev-clean-2/**/*.flac", recursive=True)
 
 np.random.shuffle(utterances)
@@ -34,3 +47,5 @@ for i, spkid in enumerate(labels):
     ax.annotate(spkid, (principalComponents[i, 0], principalComponents[i, 1]))
 plt.xlabel("Principal Component 1")
 plt.ylabel("Principal Component 2")
+plt.title("Speaker Embeddings")
+plt.show()
