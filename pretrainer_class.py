@@ -8,9 +8,11 @@ model = ECAPA_TDNN(input_size= 80,
                    attention_channels= 128,
                    lin_neurons = 192)
 
-# Initialization of the pre-trainer
 pretrain = Pretrainer(loadables={'model': model}, paths={'model': 'speechbrain/spkrec-ecapa-voxceleb/embedding_model.ckpt'})
 
-# We download the pretrained model from HuggingFace in this case
+pretrain.collect_files()
+pretrain.load_collected()
+
+pretrain = Pretrainer(collect_in='model_local', loadables={'model': model}, paths={'model': 'model_checkpoints/model.ckpt'})
 pretrain.collect_files()
 pretrain.load_collected()
