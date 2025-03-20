@@ -67,7 +67,14 @@ modules = {"enc": asr_model.mods.encoder.model,
 hparams = {"seq_cost": lambda x, y, z: sb.nnet.losses.nll_loss(x, y, z, label_smoothing = 0.1),
             "log_softmax": sb.nnet.activations.Softmax(apply_log=True)}
 
-brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda x: torch.optim.SGD(x, 1e-5))
+params = list(filter(lambda p: p.requires_grad, modules["enc"].parameters()))
+params += list(filter(lambda p: p.requires_grad, modules["emb"].parameters()))
+params += list(filter(lambda p: p.requires_grad, modules["dec"].parameters()))
+params += list(filter(lambda p: p.requires_grad, modules["seq_lin"].parameters()))
+
+print(f"Nombre de paramètres entraînables : {sum(p.numel() for p in params)}")  # Debug
+
+brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda x: torch.optim.SGD(params, 1e-5))
 brain.tokenizer = asr_model.tokenizer
 
 brain.fit(range(2), train_set=dataset,
