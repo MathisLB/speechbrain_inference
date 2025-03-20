@@ -8,10 +8,9 @@ from pipeline_prepping import dataset
 class EncDecFineTune(sb.Brain):
 
     def on_stage_start(self, stage, epoch):
+        # enable grad for all modules we want to fine-tune
         if stage == sb.Stage.TRAIN:
-            print("Modules in self.modules:", self.modules.keys())  # Debug
-            for name, module in self.modules.items():
-                print(f"Checking module: {name}")  # Debug
+            for module in [self.modules.enc, self.modules.emb, self.modules.dec, self.modules.seq_lin]:
                 for p in module.parameters():
                     p.requires_grad = True
 
@@ -67,14 +66,21 @@ modules = {"enc": asr_model.mods.encoder.model,
 hparams = {"seq_cost": lambda x, y, z: sb.nnet.losses.nll_loss(x, y, z, label_smoothing = 0.1),
             "log_softmax": sb.nnet.activations.Softmax(apply_log=True)}
 
-params = list(filter(lambda p: p.requires_grad, modules["enc"].parameters()))
-params += list(filter(lambda p: p.requires_grad, modules["emb"].parameters()))
-params += list(filter(lambda p: p.requires_grad, modules["dec"].parameters()))
-params += list(filter(lambda p: p.requires_grad, modules["seq_lin"].parameters()))
+# Dé-geler les paramètres avant la création de l'optimiseur
+for module in [modules["enc"], modules["emb"], modules["dec"], modules["seq_lin"]]:
+    for p in module.parameters():
+        p.requires_grad = True
 
-print(f"Nombre de paramètres entraînables : {sum(p.numel() for p in params)}")  # Debug
+# Vérifie que les paramètres sont bien dégelés
+params = []
+for name, module in modules.items():
+    module_params = list(filter(lambda p: p.requires_grad, module.parameters()))
+    print(f"Module {name} a {sum(p.numel() for p in module_params)} paramètres entraînables")
+    params += module_params
 
-brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda x: torch.optim.SGD(params, 1e-5))
+print("Total des paramètres entraînables:", sum(p.numel() for p in params))
+
+brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda params: torch.optim.SGD(params, 1e-5))
 brain.tokenizer = asr_model.tokenizer
 
 brain.fit(range(2), train_set=dataset,
