@@ -8,12 +8,12 @@ from pipeline_prepping import dataset
 class EncDecFineTune(sb.Brain):
 
     def on_stage_start(self, stage, epoch):
-    if stage == sb.Stage.TRAIN:
-        print("Modules in self.modules:", self.modules.keys())  # Debug
-        for name, module in self.modules.items():
-            print(f"Checking module: {name}")  # Debug
-            for p in module.parameters():
-                p.requires_grad = True
+        if stage == sb.Stage.TRAIN:
+            print("Modules in self.modules:", self.modules.keys())  # Debug
+            for name, module in self.modules.items():
+                print(f"Checking module: {name}")  # Debug
+                for p in module.parameters():
+                    p.requires_grad = True
 
     def compute_forward(self, batch, stage):
         """Forward computations from the waveform batches to the output probabilities."""
