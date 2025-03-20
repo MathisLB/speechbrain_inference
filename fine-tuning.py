@@ -66,12 +66,10 @@ modules = {"enc": asr_model.mods.encoder.model,
 hparams = {"seq_cost": lambda x, y, z: sb.nnet.losses.nll_loss(x, y, z, label_smoothing = 0.1),
             "log_softmax": sb.nnet.activations.Softmax(apply_log=True)}
 
-# Dé-geler les paramètres avant la création de l'optimiseur
 for module in [modules["enc"], modules["emb"], modules["dec"], modules["seq_lin"]]:
     for p in module.parameters():
         p.requires_grad = True
 
-# Vérifie que les paramètres sont bien dégelés
 params = []
 for name, module in modules.items():
     module_params = list(filter(lambda p: p.requires_grad, module.parameters()))
