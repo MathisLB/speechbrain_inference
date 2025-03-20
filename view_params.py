@@ -6,3 +6,5 @@ print(asr_model.mods.keys())
 print(asr_model.mods.encoder)
 
 print(asr_model.mods.encoder.compute_features)
+
+print(dir(asr_model.hparams))
