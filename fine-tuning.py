@@ -1,5 +1,8 @@
+import speechbrain as sb
+from speechbrain.inference.ASR import EncoderDecoderASR
 from speechbrain.lobes.features import Fbank
 import torch
+from pipeline_prepping import dataset
 
 # Define fine-tuning procedure
 class EncDecFineTune(sb.Brain):
@@ -48,7 +51,9 @@ class EncDecFineTune(sb.Brain):
 
 
         return loss
-    
+
+asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-crdnn-rnnlm-librispeech", savedir="./pretrained_ASR", hparams_file="hyperparams.yaml")
+
 modules = {"enc": asr_model.mods.encoder.model,
            "emb": asr_model.hparams.emb,
            "dec": asr_model.hparams.dec,
@@ -58,8 +63,8 @@ modules = {"enc": asr_model.mods.encoder.model,
 
           }
 
-hparams = {"seq_cost": lambda x, y, z: speechbrain.nnet.losses.nll_loss(x, y, z, label_smoothing = 0.1),
-            "log_softmax": speechbrain.nnet.activations.Softmax(apply_log=True)}
+hparams = {"seq_cost": lambda x, y, z: sb.nnet.losses.nll_loss(x, y, z, label_smoothing = 0.1),
+            "log_softmax": sb.nnet.activations.Softmax(apply_log=True)}
 
 brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda x: torch.optim.SGD(x, 1e-5))
 brain.tokenizer = asr_model.tokenizer
