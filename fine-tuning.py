@@ -1,18 +1,19 @@
 import speechbrain as sb
-from speechbrain.inference.ASR import EncoderDecoderASR
 from speechbrain.lobes.features import Fbank
 import torch
+from speechbrain.inference.ASR import EncoderDecoderASR
 from pipeline_prepping import dataset
 
 # Define fine-tuning procedure
 class EncDecFineTune(sb.Brain):
 
     def on_stage_start(self, stage, epoch):
-        # enable grad for all modules we want to fine-tune
-        if stage == sb.Stage.TRAIN:
-            for module in [self.modules.enc, self.modules.emb, self.modules.dec, self.modules.seq_lin]:
-                for p in module.parameters():
-                    p.requires_grad = True
+    if stage == sb.Stage.TRAIN:
+        print("Modules in self.modules:", self.modules.keys())  # Debug
+        for name, module in self.modules.items():
+            print(f"Checking module: {name}")  # Debug
+            for p in module.parameters():
+                p.requires_grad = True
 
     def compute_forward(self, batch, stage):
         """Forward computations from the waveform batches to the output probabilities."""
@@ -68,6 +69,6 @@ hparams = {"seq_cost": lambda x, y, z: sb.nnet.losses.nll_loss(x, y, z, label_sm
 
 brain = EncDecFineTune(modules, hparams=hparams, opt_class=lambda x: torch.optim.SGD(x, 1e-5))
 brain.tokenizer = asr_model.tokenizer
-    
+
 brain.fit(range(2), train_set=dataset,
           train_loader_kwargs={"batch_size": 8, "drop_last":True, "shuffle": False})
