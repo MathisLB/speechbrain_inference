@@ -9,10 +9,5 @@ model = ECAPA_TDNN(input_size= 80,
                    lin_neurons = 192)
 
 pretrain = Pretrainer(loadables={'model': model}, paths={'model': 'speechbrain/spkrec-ecapa-voxceleb/embedding_model.ckpt'})
-
-pretrain.collect_files()
-pretrain.load_collected()
-
-pretrain = Pretrainer(collect_in='model_local', loadables={'model': model}, paths={'model': 'model_checkpoints/model.ckpt'})
 pretrain.collect_files()
 pretrain.load_collected()
