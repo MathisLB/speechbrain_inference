@@ -1,4 +1,4 @@
-# Inference with speechbrain
+# Inference with Speechbrain
 A repository made for performing inference with [Speechbrain](https://speechbrain.github.io/)
 
 ## Overview
